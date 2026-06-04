@@ -166,4 +166,5 @@ route.post("/logout", async (req, res) => {
   }
 });
 
+// export
 module.exports = route;
