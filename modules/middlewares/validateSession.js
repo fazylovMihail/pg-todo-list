@@ -1,36 +1,23 @@
-const db = require("../db");
-const { SessionSchema } = require("../api/Session");
+const { findUserBySessionId } = require("../utils");
+const { UserScheme } = require("../api/User");
 
 module.exports = async function validateSession(req, res, next) {
   try {
-    const session_id = req.cookies.session_id;
+    const sessionId = req.cookies.session_id;
 
-    if (!session_id) {
-      return res.status(401).json({ error: "Сессия отсутствует." });
+    if (!sessionId) {
+      return next();
     }
 
-    const [session] = await db
-      .select("expires_at")
-      .table("sessions")
-      .where({ session_id });
+    const user = await findUserBySessionId(sessionId);
 
-    if (!session) {
-      return res.status(401).json({ error: "Сессия недействительна." });
+    if (!user) {
+      return next();
     }
 
-    const validatedSession = SessionSchema.parse(session);
+    const validatedUser = UserScheme.parse(user);
 
-    const now = new Date();
-    const expiresAt = new Date(validatedSession.expires_at);
-
-    if (expiresAt < now) {
-      await db.table("sessions").where({ session_id }).del();
-      res.clearCookie("session_id");
-
-      return res.status(401).json({ error: "Сессия истекла." });
-    }
-
-    req.session = validatedSession;
+    req.user = validatedUser;
     next();
   } catch (err) {
     console.error(err);

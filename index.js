@@ -5,6 +5,7 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const authRoute = require("./modules/routes/auth");
 const db = require("./modules/db");
+const validateSession = require("./modules/middlewares/validateSession");
 
 const app = express(); // main route
 
@@ -12,6 +13,7 @@ const app = express(); // main route
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(validateSession);
 
 // routes
 app.use("/auth", authRoute);

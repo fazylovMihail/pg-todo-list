@@ -41,6 +41,10 @@ const route = express.Router(); // auth route
 // register request
 route.post("/register", async (req, res) => {
   try {
+    if (req.user) {
+      return res.status(400).json({ error: "Вы уже авторизованы." });
+    }
+
     const data = req.body; // request data
     const { name, age, email, password } = RegisterUserScheme.parse(data); // validating request data
 
@@ -90,6 +94,10 @@ route.post("/register", async (req, res) => {
 
 route.post("/login", async (req, res) => {
   try {
+    if (req.user) {
+      return res.status(400).json({ error: "Вы уже авторизованы." });
+    }
+
     const data = req.body; // request data
     const { email, password } = LoginUserScheme.parse(data); // validating request data
 
@@ -124,6 +132,36 @@ route.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Ошибка типизации." });
     }
 
+    res.status(500).json({ error: "Внутренняя ошибка сервера." });
+  }
+});
+
+route.post("/logout", async (req, res) => {
+  try {
+    const user = req.user; // get user
+    if (!user) {
+      return res.status(401).json({ error: "Вы не авторизованы." });
+    }
+
+    const sessionId = req.cookies.session_id; // get session
+    if (!sessionId) {
+      return res.sendStatus(400);
+    }
+
+    // delete session
+    const deletedCount = await db("sessions")
+      .where({ session_id: sessionId, user_id: user.id })
+      .delete();
+
+    res.clearCookie("session_id", COOKIE_OPTIONS); // clear JWT token
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: "Сессия не найдена." });
+    }
+
+    res.sendStatus(204); // send response
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Внутренняя ошибка сервера." });
   }
 });
