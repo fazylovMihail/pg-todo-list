@@ -9,6 +9,7 @@ const { ZodError } = require("zod");
 const { nanoid } = require("nanoid");
 const db = require("../db");
 const { hash, compare } = require("bcrypt");
+const { guestMiddleware, authMiddleware } = require("../middlewares/auth");
 
 // constants
 const COOKIE_OPTIONS = {
@@ -39,12 +40,8 @@ const createSession = async (user) => {
 const route = express.Router(); // auth route
 
 // register request
-route.post("/register", async (req, res) => {
+route.post("/register", guestMiddleware, async (req, res) => {
   try {
-    if (req.user) {
-      return res.status(400).json({ error: "Вы уже авторизованы." });
-    }
-
     const data = req.body; // request data
     const { name, age, email, password } = RegisterUserScheme.parse(data); // validating request data
 
@@ -92,7 +89,7 @@ route.post("/register", async (req, res) => {
   }
 });
 
-route.post("/login", async (req, res) => {
+route.post("/login", guestMiddleware, async (req, res) => {
   try {
     if (req.user) {
       return res.status(400).json({ error: "Вы уже авторизованы." });
@@ -136,13 +133,8 @@ route.post("/login", async (req, res) => {
   }
 });
 
-route.post("/logout", async (req, res) => {
+route.post("/logout", authMiddleware, async (req, res) => {
   try {
-    const user = req.user; // get user
-    if (!user) {
-      return res.status(401).json({ error: "Вы не авторизованы." });
-    }
-
     const sessionId = req.cookies.session_id; // get session
     if (!sessionId) {
       return res.sendStatus(400);
@@ -166,4 +158,5 @@ route.post("/logout", async (req, res) => {
   }
 });
 
+// export
 module.exports = route;
