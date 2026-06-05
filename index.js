@@ -4,6 +4,7 @@ require("dotenv").config(); // dotenv config
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const authRoute = require("./modules/routes/auth");
+const todosRoute = require("./modules/routes/todos");
 const db = require("./modules/db");
 const validateSession = require("./modules/middlewares/validateSession");
 
@@ -17,6 +18,7 @@ app.use(validateSession);
 
 // routes
 app.use("/auth", authRoute);
+app.use("/todos", todosRoute);
 
 // launch server
 const PORT = process.env.PORT || 3000;
