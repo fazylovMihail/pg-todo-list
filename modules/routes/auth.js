@@ -140,12 +140,12 @@ route.post("/logout", authMiddleware, async (req, res) => {
       return res.sendStatus(400);
     }
 
+    res.clearCookie("session_id", COOKIE_OPTIONS); // clear cookie session token
+
     // delete session
     const deletedCount = await db("sessions")
-      .where({ session_id: sessionId, user_id: user.id })
+      .where({ session_id: sessionId, user_id: req.user.id })
       .delete();
-
-    res.clearCookie("session_id", COOKIE_OPTIONS); // clear JWT token
 
     if (deletedCount === 0) {
       return res.status(404).json({ error: "Сессия не найдена." });
