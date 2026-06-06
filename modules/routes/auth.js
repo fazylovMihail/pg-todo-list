@@ -9,7 +9,10 @@ const { ZodError } = require("zod");
 const { nanoid } = require("nanoid");
 const db = require("../db");
 const { hash, compare } = require("bcrypt");
-const { guestMiddleware, authMiddleware } = require("../middlewares/auth");
+const {
+  guestMiddleware,
+  authMiddleware,
+} = require("../middlewares/portValidate");
 
 // constants
 const COOKIE_OPTIONS = {

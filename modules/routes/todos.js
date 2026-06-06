@@ -8,12 +8,12 @@ const {
   UpdateTodoSchema,
 } = require("../api/Todo");
 const { nanoid } = require("nanoid");
-const { requireAuth } = require("../middlewares/todos");
+const { authMiddleware } = require("../middlewares/portValidate");
 
 const route = express();
 
 // middlewares
-route.use(requireAuth);
+route.use(authMiddleware);
 
 route.get("/", async (req, res) => {
   try {
